@@ -5,7 +5,7 @@ from sqlalchemy import Enum
 from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy.sql import func
-
+from sqlalchemy.orm import relationship
 from app.db.database import Base
 from app.db.models.enums import UserRole
 
@@ -46,4 +46,16 @@ class User(Base):
     created_at = Column(
         DateTime(timezone=True),
         server_default=func.now()
+    )
+
+    created_tickets = relationship(
+        "Ticket",
+        foreign_keys="Ticket.creator_id",
+        back_populates="creator"
+    )
+
+    assigned_tickets = relationship(
+        "Ticket",
+        foreign_keys="Ticket.executor_id",
+        back_populates="executor"
     )

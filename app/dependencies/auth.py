@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.security import decode_access_token
 from app.dependencies.database import get_db
+from app.db.models.enums import UserRole
 
 from app.repositories.user_repository import get_user_by_email
 from fastapi.security import OAuth2PasswordBearer
@@ -46,3 +47,14 @@ def get_current_user(
         )
 
     return user
+
+def get_current_admin(
+    current_user=Depends(get_current_user)
+):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied"
+        )
+
+    return current_user
