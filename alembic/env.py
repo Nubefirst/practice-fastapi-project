@@ -5,6 +5,7 @@ from sqlalchemy import pool
 from app.db.database import Base
 from app.db.models.user import User
 from app.db.models.ticket import Ticket
+from app.db.models.audit_log import AuditLog
 from alembic import context
 
 # this is the Alembic Config object, which provides
