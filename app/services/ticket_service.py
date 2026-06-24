@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from app.repositories.ticket_repository import (create_ticket,get_user_tickets, get_ticket_by_id, get_tickets_admin, assign_executor, update_ticket_status)
-
+from app.services.audit_log_service import log_action
 
 
 def create_ticket_service(
@@ -10,12 +10,23 @@ def create_ticket_service(
     description: str,
     creator_id: int
 ):
-    return create_ticket(
+    ticket = create_ticket(
         db=db,
         title=title,
         description=description,
         creator_id=creator_id
     )
+
+    log_action(
+        db=db,
+        user_id=creator_id,
+        action="CREATE_TICKET",
+        entity_type="TICKET",
+        entity_id=ticket.id,
+        details=f"Created ticket '{ticket.title}'"
+    )
+
+    return ticket
 
 
 def get_user_tickets_service(db: Session, user_id: int):
@@ -70,11 +81,22 @@ def assign_ticket_service(
         )
 
     # защита: только admin уже проверен Depends, но логика остаётся здесь
-    return assign_executor(
+    updated_ticket = assign_executor(
         db=db,
         ticket=ticket,
         executor_id=executor_id
     )
+
+    log_action(
+        db=db,
+        user_id=admin.id,
+        action="ASSIGN_EXECUTOR",
+        entity_type="TICKET",
+        entity_id=ticket.id,
+        details=f"Assigned executor_id={executor_id}"
+    )
+
+    return updated_ticket
 
 
 def change_status_service(
@@ -91,10 +113,23 @@ def change_status_service(
             detail="Ticket not found"
         )
 
-    return update_ticket_status(
+    old_status = ticket.status
+
+    updated_ticket = update_ticket_status(
         db=db,
         ticket=ticket,
         new_status=new_status
     )
+
+    log_action(
+        db=db,
+        user_id=admin.id,
+        action="CHANGE_STATUS",
+        entity_type="TICKET",
+        entity_id=ticket.id,
+        details=f"{old_status} -> {new_status}"
+    )
+
+    return updated_ticket
 
 
