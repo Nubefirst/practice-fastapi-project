@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+
+  db:
+    image: postgres:17
+
+    container_name: ticketflow_db
+
+    restart: always
+
+    environment:
+      POSTGRES_DB: ticketflow
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  api:
+    build: .
+
+    container_name: ticketflow_api
+
+    restart: always
+
+    depends_on:
+      - db
+
+    ports:
+      - "8000:8000"
+
+    env_file:
+      - .env.docker
+
+volumes:
+  postgres_data:
