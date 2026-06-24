@@ -1,6 +1,9 @@
 from sqlalchemy.orm import Session
 
-from app.repositories.audit_log_repository import create_audit_log
+from app.repositories.audit_log_repository import (
+    create_audit_log,
+    get_audit_logs
+)
 
 
 def log_action(
@@ -19,3 +22,7 @@ def log_action(
         entity_id=entity_id,
         details=details
     )
+
+
+def get_audit_logs_service(db: Session):
+    return get_audit_logs(db=db)

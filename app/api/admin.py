@@ -2,9 +2,11 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from typing import List
+
+from app.schemas.audit_log import AuditLogResponse
+from app.services.audit_log_service import get_audit_logs_service
 from app.dependencies.auth import get_current_admin
 from app.dependencies.database import get_db
-
 from app.schemas.ticket import TicketResponse
 from app.services.ticket_service import get_tickets_admin_service, assign_ticket_service, change_status_service
 from app.db.models.enums import TicketStatus
@@ -76,3 +78,14 @@ def change_status(
         new_status=data.status,
         admin=admin
     )
+
+
+@router.get(
+    "/audit-logs",
+    response_model=list[AuditLogResponse]
+)
+def get_audit_logs(
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin)
+):
+    return get_audit_logs_service(db=db)

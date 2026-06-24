@@ -24,3 +24,9 @@ def create_audit_log(
     db.refresh(audit_log)
 
     return audit_log
+
+
+def get_audit_logs(db: Session):
+    return db.query(AuditLog).order_by(
+        AuditLog.created_at.desc()
+    ).all()
